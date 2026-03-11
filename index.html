@@ -1,20 +1,18 @@
 <!DOCTYPE html>
 <html lang="ar">
-
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>HAMO TRIPLE M PRO MAX ULTRA</title>
 
 <link rel="stylesheet" href="css/main.css">
+<link rel="stylesheet" href="css/slider.css">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 </head>
-
 <body>
 
 <header class="navbar">
 <div class="logo">HAMO TRIPLE M</div>
-
 <nav>
 <a href="#">Home</a>
 <a href="#">Movies</a>
@@ -22,20 +20,39 @@
 <a href="#">Live TV</a>
 <a href="#">My List</a>
 </nav>
-
 <input id="search" placeholder="Search movies or channels">
 </header>
 
 <!-- Hero Slider -->
 <section class="hero-slider" id="hero-slider"></section>
 
-<!-- Trending Movies -->
-<section class="row-section">
+<!-- أقسام الأفلام -->
+<section class="movies-section">
 <h2>🔥 Trending Movies</h2>
-<div class="row" id="trending"></div>
+<div class="movie-row" id="trending-row"></div>
 </section>
 
-<!-- Live IPTV -->
+<section class="movies-section">
+<h2>🎬 Latest Movies</h2>
+<div class="movie-row" id="latest-row"></div>
+</section>
+
+<section class="movies-section">
+<h2>📺 Series</h2>
+<div class="movie-row" id="series-row"></div>
+</section>
+
+<section class="movies-section">
+<h2>🎨 Kids & Anime</h2>
+<div class="movie-row" id="kids-row"></div>
+</section>
+
+<section class="movies-section">
+<h2>📚 Documentaries</h2>
+<div class="movie-row" id="doc-row"></div>
+</section>
+
+<!-- IPTV -->
 <section class="row-section">
 <h2>📡 Live IPTV Channels</h2>
 <div id="channels"></div>
@@ -55,6 +72,8 @@
 <script src="js/movies.js"></script>
 <script src="js/m3u-loader.js"></script>
 <script src="js/player.js"></script>
+<script src="js/favorites.js"></script>
+<script src="js/search.js"></script>
 
 </body>
 </html>
