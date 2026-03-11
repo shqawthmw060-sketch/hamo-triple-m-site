@@ -8,48 +8,66 @@
 
 <title>HAMO TRIPLE M ULTRA</title>
 
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="css/main.css">
 
 </head>
 
 <body>
 
-<header>
+<header class="navbar">
 
-<h1>HAMO TRIPLE M</h1>
+<div class="logo">HAMO TRIPLE M</div>
 
-<input id="search" placeholder="Search movies or channels">
+<nav>
+
+<a href="#">Home</a>
+<a href="#">Movies</a>
+<a href="#">Series</a>
+<a href="#">Live TV</a>
+<a href="#">My List</a>
+
+</nav>
+
+<input id="search" placeholder="Search movies">
 
 </header>
 
-<section>
+<section class="hero-slider">
 
-<h2>📡 Live TV</h2>
+<div class="slide">
 
-<select id="country">
+<img src="https://image.tmdb.org/t/p/w1280/8UlWHLMpgZm9bx6QYh0NFoq67TZ.jpg">
 
-<option value="all">All Countries</option>
-<option value="egypt">Egypt</option>
-<option value="usa">USA</option>
-<option value="france">France</option>
+<div class="caption">
 
-</select>
+<h1>Featured Movie</h1>
 
-<div id="channels"></div>
+<button onclick="playTrailer()">▶ Play</button>
+
+</div>
+
+</div>
+
+</section>
+
+<section class="row-section">
+
+<h2>🔥 Trending Movies</h2>
+
+<div class="row" id="trending"></div>
 
 </section>
 
 <section>
 
-<h2>🎬 Movies</h2>
+<h2>📡 Live IPTV</h2>
 
-<div id="movies"></div>
+<video id="player" controls></video>
 
 </section>
 
-<video id="player" controls width="100%"></video>
-
-<script src="script.js"></script>
+<script src="js/app.js"></script>
+<script src="js/m3u-loader.js"></script>
 
 </body>
 </html>
