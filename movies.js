@@ -55,3 +55,21 @@ loadMoviesByCategory("latest-row","latest");
 loadMoviesByCategory("series-row","series");
 loadMoviesByCategory("kids-row","kids");
 loadMoviesByCategory("doc-row","doc");
+const movieSections = {
+  "trending-row":["images/darkknight.png","images/joker.png","images/avengers.png"],
+  "latest-row":["images/avengers.png","images/joker.png","images/darkknight.png"],
+  "series-row":["images/joker.png","images/darkknight.png","images/avengers.png"],
+  "kids-row":["images/darkknight.png","images/avengers.png"],
+  "doc-row":["images/joker.png","images/avengers.png"]
+};
+
+Object.keys(movieSections).forEach(section=>{
+  const container=document.getElementById(section);
+  movieSections[section].forEach(img=>{
+    const card=document.createElement("div");
+    card.className="movie-card";
+    card.innerHTML=`<img src="${img}" class="poster">
+                    <p>${img.split("/").pop().split(".")[0]}</p>`;
+    container.appendChild(card);
+  });
+});
