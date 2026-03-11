@@ -81,3 +81,10 @@ padding:20px;
 text-align:center;
 margin-top:40px;
 }
+<div class="social-bar">
+<a href="https://wa.me/201508536392" target="_blank"><i class="fab fa-whatsapp"></i></a>
+<a href="https://t.me/" target="_blank"><i class="fab fa-telegram"></i></a>
+<a href="https://tiktok.com/" target="_blank"><i class="fab fa-tiktok"></i></a>
+<a href="https://facebook.com/" target="_blank"><i class="fab fa-facebook"></i></a>
+<a href="https://youtube.com/" target="_blank"><i class="fab fa-youtube"></i></a>
+</div>
