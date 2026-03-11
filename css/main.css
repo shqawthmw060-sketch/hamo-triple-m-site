@@ -1,0 +1,13 @@
+body { margin:0; font-family:Arial; background:#0b0b0b; color:white; }
+.navbar { display:flex; justify-content:space-between; align-items:center; padding:15px 40px; background:black; }
+.logo { font-size:26px; color:red; font-weight:bold; }
+nav a { color:white; margin:10px; text-decoration:none; }
+input { padding:8px; border-radius:4px; border:none; }
+.row-section { padding:20px 40px; }
+.row { display:flex; gap:15px; overflow-x:auto; }
+.card { min-width:180px; height:120px; background:#222; border-radius:8px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:.3s; }
+.card:hover { transform:scale(1.1); background:#333; }
+.hero-slider { height:50vh; margin-bottom:30px; }
+.social-bar{position:fixed;right:20px;bottom:20px;display:flex;flex-direction:column;gap:10px;z-index:999;}
+.social-bar a{width:50px;height:50px;background:#222;color:white;display:flex;align-items:center;justify-content:center;border-radius:50%;font-size:22px;text-decoration:none;transition:.3s;}
+.social-bar a:hover{transform:scale(1.1); background:red;}
