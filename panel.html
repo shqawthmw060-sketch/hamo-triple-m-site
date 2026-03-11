@@ -110,3 +110,34 @@ render()
 
 </body>
 </html>
+<!DOCTYPE html>
+<html lang="ar">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>HAMO TRIPLE M Admin</title>
+<link rel="stylesheet" href="../css/main.css">
+</head>
+<body>
+
+<h1>لوحة التحكم - HAMO TRIPLE M</h1>
+
+<section>
+<h2>إدارة الأفلام</h2>
+<textarea id="movies-data" placeholder="أدخل JSON الأفلام هنا"></textarea>
+<button onclick="saveMovies()">حفظ الأفلام</button>
+</section>
+
+<section>
+<h2>إدارة القنوات</h2>
+<textarea id="channels-data" placeholder="أدخل M3U القنوات هنا"></textarea>
+<button onclick="saveChannels()">حفظ القنوات</button>
+</section>
+
+<script>
+function saveMovies(){alert("تم حفظ الأفلام! (مؤقت)");}
+function saveChannels(){alert("تم حفظ القنوات! (مؤقت)");}
+</script>
+
+</body>
+</html>
