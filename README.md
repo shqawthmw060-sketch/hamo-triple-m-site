@@ -1,232 +1,371 @@
-HAMO & TRIPLE M 
-// drizzle/schema.ts
+// server/db.ts
+import { eq, desc, like, and, inArray } from "drizzle-orm";
+import { drizzle } from "drizzle-orm/mysql2";
 import { 
-  int, 
-  mysqlEnum, 
-  mysqlTable, 
-  text, 
-  timestamp, 
-  varchar,
-  decimal,
-  boolean,
-  json,
-  longtext
-} from "drizzle-orm/mysql-core";
+  InsertUser, 
+  users,
+  movies,
+  series,
+  episodes,
+  favorites,
+  watchHistory,
+  reviews,
+  subscriptions,
+  notifications,
+  userPreferences,
+  recommendations
+} from "../drizzle/schema";
+import { ENV } from './_core/env';
 
-// Users table
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  subscriptionTier: mysqlEnum("subscriptionTier", ["Free", "Premium", "Pro Max Plus"]).default("Free").notNull(),
-  profileImage: text("profileImage"),
-  bio: text("bio"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
-});
+let _db: ReturnType<typeof drizzle> | null = null;
 
-export type User = typeof users.$inferSelect;
-export type InsertUser = typeof users.$inferInsert;
+export async function getDb() {
+  if (!_db && process.env.DATABASE_URL) {
+    try {
+      _db = drizzle(process.env.DATABASE_URL);
+    } catch (error) {
+      console.warn("[Database] Failed to connect:", error);
+      _db = null;
+    }
+  }
+  return _db;
+}
 
-// Movies table
-export const movies = mysqlTable("movies", {
-  id: int("id").autoincrement().primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: longtext("description"),
-  genre: varchar("genre", { length: 255 }).notNull(),
-  releaseYear: int("releaseYear"),
-  director: varchar("director", { length: 255 }),
-  cast: text("cast"),
-  duration: int("duration"),
-  rating: decimal("rating", { precision: 3, scale: 1 }).default("0"),
-  posterUrl: text("posterUrl"),
-  backdropUrl: text("backdropUrl"),
-  trailerUrl: text("trailerUrl"),
-  contentRating: varchar("contentRating", { length: 20 }),
-  minSubscriptionTier: mysqlEnum("minSubscriptionTier", ["Free", "Premium", "Pro Max Plus"]).default("Free").notNull(),
-  videoUrl: text("videoUrl"),
-  availableQualities: varchar("availableQualities", { length: 100 }).default("HD,Full HD,4K"),
-  subtitles: json("subtitles"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export async function upsertUser(user: InsertUser): Promise<void> {
+  if (!user.openId) {
+    throw new Error("User openId is required for upsert");
+  }
 
-export type Movie = typeof movies.$inferSelect;
-export type InsertMovie = typeof movies.$inferInsert;
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot upsert user: database not available");
+    return;
+  }
 
-// Series table
-export const series = mysqlTable("series", {
-  id: int("id").autoincrement().primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: longtext("description"),
-  genre: varchar("genre", { length: 255 }).notNull(),
-  releaseYear: int("releaseYear"),
-  director: varchar("director", { length: 255 }),
-  cast: text("cast"),
-  rating: decimal("rating", { precision: 3, scale: 1 }).default("0"),
-  posterUrl: text("posterUrl"),
-  backdropUrl: text("backdropUrl"),
-  trailerUrl: text("trailerUrl"),
-  contentRating: varchar("contentRating", { length: 20 }),
-  minSubscriptionTier: mysqlEnum("minSubscriptionTier", ["Free", "Premium", "Pro Max Plus"]).default("Free").notNull(),
-  totalSeasons: int("totalSeasons"),
-  totalEpisodes: int("totalEpisodes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+  try {
+    const values: InsertUser = {
+      openId: user.openId,
+    };
+    const updateSet: Record<string, unknown> = {};
 
-export type Series = typeof series.$inferSelect;
-export type InsertSeries = typeof series.$inferInsert;
+    const textFields = ["name", "email", "loginMethod"] as const;
+    type TextField = (typeof textFields)[number];
 
-// Episodes table
-export const episodes = mysqlTable("episodes", {
-  id: int("id").autoincrement().primaryKey(),
-  seriesId: int("seriesId").notNull(),
-  seasonNumber: int("seasonNumber").notNull(),
-  episodeNumber: int("episodeNumber").notNull(),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: longtext("description"),
-  duration: int("duration"),
-  releaseDate: timestamp("releaseDate"),
-  videoUrl: text("videoUrl"),
-  posterUrl: text("posterUrl"),
-  availableQualities: varchar("availableQualities", { length: 100 }).default("HD,Full HD,4K"),
-  subtitles: json("subtitles"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+    const assignNullable = (field: TextField) => {
+      const value = user[field];
+      if (value === undefined) return;
+      const normalized = value ?? null;
+      values[field] = normalized;
+      updateSet[field] = normalized;
+    };
 
-export type Episode = typeof episodes.$inferSelect;
-export type InsertEpisode = typeof episodes.$inferInsert;
+    textFields.forEach(assignNullable);
 
-// Favorites table
-export const favorites = mysqlTable("favorites", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  movieId: int("movieId"),
-  seriesId: int("seriesId"),
-  type: mysqlEnum("type", ["movie", "series"]).notNull(),
-  addedAt: timestamp("addedAt").defaultNow().notNull(),
-});
+    if (user.lastSignedIn !== undefined) {
+      values.lastSignedIn = user.lastSignedIn;
+      updateSet.lastSignedIn = user.lastSignedIn;
+    }
+    if (user.role !== undefined) {
+      values.role = user.role;
+      updateSet.role = user.role;
+    } else if (user.openId === ENV.ownerOpenId) {
+      values.role = 'admin';
+      updateSet.role = 'admin';
+    }
 
-export type Favorite = typeof favorites.$inferSelect;
-export type InsertFavorite = typeof favorites.$inferInsert;
+    if (!values.lastSignedIn) {
+      values.lastSignedIn = new Date();
+    }
 
-// Watch History table
-export const watchHistory = mysqlTable("watchHistory", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  movieId: int("movieId"),
-  episodeId: int("episodeId"),
-  type: mysqlEnum("type", ["movie", "episode"]).notNull(),
-  watchedAt: timestamp("watchedAt").defaultNow().notNull(),
-  duration: int("duration"),
-  totalDuration: int("totalDuration"),
-  quality: varchar("quality", { length: 50 }),
-});
+    if (Object.keys(updateSet).length === 0) {
+      updateSet.lastSignedIn = new Date();
+    }
 
-export type WatchHistory = typeof watchHistory.$inferSelect;
-export type InsertWatchHistory = typeof watchHistory.$inferInsert;
+    await db.insert(users).values(values).onDuplicateKeyUpdate({
+      set: updateSet,
+    });
+  } catch (error) {
+    console.error("[Database] Failed to upsert user:", error);
+    throw error;
+  }
+}
 
-// Reviews table
-export const reviews = mysqlTable("reviews", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  movieId: int("movieId"),
-  seriesId: int("seriesId"),
-  type: mysqlEnum("type", ["movie", "series"]).notNull(),
-  rating: int("rating").notNull(),
-  title: varchar("title", { length: 255 }),
-  content: longtext("content"),
-  helpful: int("helpful").default(0),
-  unhelpful: int("unhelpful").default(0),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export async function getUserByOpenId(openId: string) {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get user: database not available");
+    return undefined;
+  }
 
-export type Review = typeof reviews.$inferSelect;
-export type InsertReview = typeof reviews.$inferInsert;
+  const result = await db.select().from(users).where(eq(users.openId, openId)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
 
-// Comments table
-export const comments = mysqlTable("comments", {
-  id: int("id").autoincrement().primaryKey(),
-  reviewId: int("reviewId").notNull(),
-  userId: int("userId").notNull(),
-  content: longtext("content").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export async function getUserById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
 
-export type Comment = typeof comments.$inferSelect;
-export type InsertComment = typeof comments.$inferInsert;
+// Movies queries
+export async function getAllMovies(limit = 20, offset = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(movies).limit(limit).offset(offset).orderBy(desc(movies.createdAt));
+}
 
-// Subscriptions table
-export const subscriptions = mysqlTable("subscriptions", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  tier: mysqlEnum("tier", ["Free", "Premium", "Pro Max Plus"]).notNull(),
-  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
-  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
-  status: mysqlEnum("status", ["active", "canceled", "past_due", "paused"]).default("active").notNull(),
-  currentPeriodStart: timestamp("currentPeriodStart"),
-  currentPeriodEnd: timestamp("currentPeriodEnd"),
-  canceledAt: timestamp("canceledAt"),
-  autoRenew: boolean("autoRenew").default(true),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+export async function getMovieById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(movies).where(eq(movies.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
 
-export type Subscription = typeof subscriptions.$inferSelect;
-export type InsertSubscription = typeof subscriptions.$inferInsert;
+export async function searchMovies(query: string, limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(movies)
+    .where(like(movies.title, `%${query}%`))
+    .limit(limit);
+}
 
-// Notifications table
-export const notifications = mysqlTable("notifications", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  type: mysqlEnum("type", ["new_content", "new_episode", "recommendation", "subscription"]).notNull(),
-  title: varchar("title", { length: 255 }).notNull(),
-  message: longtext("message"),
-  movieId: int("movieId"),
-  seriesId: int("seriesId"),
-  read: boolean("read").default(false),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+export async function getMoviesByGenre(genre: string, limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(movies)
+    .where(like(movies.genre, `%${genre}%`))
+    .limit(limit)
+    .orderBy(desc(movies.rating));
+}
 
-export type Notification = typeof notifications.$inferSelect;
-export type InsertNotification = typeof notifications.$inferInsert;
+export async function getFeaturedMovies(limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(movies)
+    .orderBy(desc(movies.rating))
+    .limit(limit);
+}
 
-// User Preferences table
-export const userPreferences = mysqlTable("userPreferences", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().unique(),
-  favoriteGenres: varchar("favoriteGenres", { length: 255 }),
-  notificationsEnabled: boolean("notificationsEnabled").default(true),
-  emailNotifications: boolean("emailNotifications").default(true),
-  defaultQuality: varchar("defaultQuality", { length: 50 }).default("Full HD"),
-  autoPlayNext: boolean("autoPlayNext").default(true),
-  language: varchar("language", { length: 10 }).default("en"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+// Series queries
+export async function getAllSeries(limit = 20, offset = 0) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(series).limit(limit).offset(offset).orderBy(desc(series.createdAt));
+}
 
-export type UserPreference = typeof userPreferences.$inferSelect;
-export type InsertUserPreference = typeof userPreferences.$inferInsert;
+export async function getSeriesById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(series).where(eq(series.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
 
-// Recommendations table
-export const recommendations = mysqlTable("recommendations", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  movieId: int("movieId"),
-  seriesId: int("seriesId"),
-  type: mysqlEnum("type", ["movie", "series"]).notNull(),
-  score: decimal("score", { precision: 5, scale: 2 }),
-  reason: varchar("reason", { length: 255 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+export async function searchSeries(query: string, limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(series)
+    .where(like(series.title, `%${query}%`))
+    .limit(limit);
+}
 
-export type Recommendation = typeof recommendations.$inferSelect;
-export type InsertRecommendation = typeof recommendations.$inferInsert;
+export async function getSeriesByGenre(genre: string, limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(series)
+    .where(like(series.genre, `%${genre}%`))
+    .limit(limit)
+    .orderBy(desc(series.rating));
+}
+
+export async function getFeaturedSeries(limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(series)
+    .orderBy(desc(series.rating))
+    .limit(limit);
+}
+
+// Episodes queries
+export async function getEpisodesBySeriesId(seriesId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(episodes)
+    .where(eq(episodes.seriesId, seriesId))
+    .orderBy(episodes.seasonNumber, episodes.episodeNumber);
+}
+
+export async function getEpisodeById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(episodes).where(eq(episodes.id, id)).limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+// Favorites queries
+export async function getUserFavorites(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(favorites).where(eq(favorites.userId, userId));
+}
+
+export async function addToFavorites(userId: number, movieId?: number, seriesId?: number, type: 'movie' | 'series' = 'movie') {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(favorites).values({
+    userId,
+    movieId: movieId || null,
+    seriesId: seriesId || null,
+    type,
+  });
+}
+
+export async function removeFromFavorites(userId: number, movieId?: number, seriesId?: number) {
+  const db = await getDb();
+  if (!db) return;
+  const conditions: any[] = [eq(favorites.userId, userId)];
+  if (movieId) conditions.push(eq(favorites.movieId, movieId));
+  if (seriesId) conditions.push(eq(favorites.seriesId, seriesId));
+  
+  await db.delete(favorites).where(and(...conditions));
+}
+
+// Watch History queries
+export async function addToWatchHistory(userId: number, movieId?: number, episodeId?: number, type: 'movie' | 'episode' = 'movie', duration?: number, totalDuration?: number, quality?: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(watchHistory).values({
+    userId,
+    movieId: movieId || null,
+    episodeId: episodeId || null,
+    type,
+    duration: duration || null,
+    totalDuration: totalDuration || null,
+    quality: quality || null,
+  });
+}
+
+export async function getUserWatchHistory(userId: number, limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(watchHistory)
+    .where(eq(watchHistory.userId, userId))
+    .orderBy(desc(watchHistory.watchedAt))
+    .limit(limit);
+}
+
+// Reviews queries
+export async function addReview(userId: number, rating: number, movieId?: number, seriesId?: number, type: 'movie' | 'series' = 'movie', title?: string, content?: string) {
+  const db = await getDb();
+  if (!db) return;
+  return db.insert(reviews).values({
+    userId,
+    rating,
+    movieId: movieId || null,
+    seriesId: seriesId || null,
+    type,
+    title: title || null,
+    content: content || null,
+  });
+}
+
+export async function getReviewsForMovie(movieId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(reviews)
+    .where(eq(reviews.movieId, movieId))
+    .orderBy(desc(reviews.createdAt));
+}
+
+export async function getReviewsForSeries(seriesId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(reviews)
+    .where(eq(reviews.seriesId, seriesId))
+    .orderBy(desc(reviews.createdAt));
+}
+
+// Subscriptions queries
+export async function getUserSubscription(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(subscriptions)
+    .where(eq(subscriptions.userId, userId))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createSubscription(userId: number, tier: 'Free' | 'Premium' | 'Pro Max Plus', stripeCustomerId?: string, stripeSubscriptionId?: string) {
+  const db = await getDb();
+  if (!db) return;
+  return db.insert(subscriptions).values({
+    userId,
+    tier,
+    stripeCustomerId,
+    stripeSubscriptionId,
+    status: 'active',
+  });
+}
+
+// Notifications queries
+export async function getUserNotifications(userId: number, limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(notifications)
+    .where(eq(notifications.userId, userId))
+    .orderBy(desc(notifications.createdAt))
+    .limit(limit);
+}
+
+export async function createNotification(userId: number, type: 'new_content' | 'new_episode' | 'recommendation' | 'subscription', title: string, message?: string, movieId?: number, seriesId?: number) {
+  const db = await getDb();
+  if (!db) return;
+  return db.insert(notifications).values({
+    userId,
+    type,
+    title,
+    message,
+    movieId,
+    seriesId,
+  });
+}
+
+// User Preferences queries
+export async function getUserPreferences(userId: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(userPreferences)
+    .where(eq(userPreferences.userId, userId))
+    .limit(1);
+  return result.length > 0 ? result[0] : undefined;
+}
+
+export async function createUserPreferences(userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  return db.insert(userPreferences).values({ userId });
+}
+
+// Recommendations queries
+export async function getRecommendationsForUser(userId: number, limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(recommendations)
+    .where(eq(recommendations.userId, userId))
+    .orderBy(desc(recommendations.score))
+    .limit(limit);
+}
+
+export async function addRecommendation(userId: number, movieId?: number, seriesId?: number, type: 'movie' | 'series' = 'movie', score?: number, reason?: string) {
+  const db = await getDb();
+  if (!db) return;
+  const scoreDecimal = score ? (score as any) : null;
+  return db.insert(recommendations).values({
+    userId,
+    type,
+    movieId: movieId || null,
+    seriesId: seriesId || null,
+    score: scoreDecimal,
+    reason: reason || null,
+  });
+}
