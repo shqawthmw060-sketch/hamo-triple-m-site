@@ -1,232 +1,719 @@
-HAMO & TRIPLE M 
-// drizzle/schema.ts
-import { 
-  int, 
-  mysqlEnum, 
-  mysqlTable, 
-  text, 
-  timestamp, 
-  varchar,
-  decimal,
-  boolean,
-  json,
-  longtext
-} from "drizzle-orm/mysql-core";
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HAMO & TRIPLE M - Global Pro Max Plus</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
 
-// Users table
-export const users = mysqlTable("users", {
-  id: int("id").autoincrement().primaryKey(),
-  openId: varchar("openId", { length: 64 }).notNull().unique(),
-  name: text("name"),
-  email: varchar("email", { length: 320 }),
-  loginMethod: varchar("loginMethod", { length: 64 }),
-  role: mysqlEnum("role", ["user", "admin"]).default("user").notNull(),
-  subscriptionTier: mysqlEnum("subscriptionTier", ["Free", "Premium", "Pro Max Plus"]).default("Free").notNull(),
-  profileImage: text("profileImage"),
-  bio: text("bio"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-  lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
-});
+        :root {
+            --primary: #FF6B35;
+            --secondary: #004E89;
+            --accent: #1ABC9C;
+            --dark: #0F1419;
+            --light: #F8F9FA;
+            --text: #E0E0E0;
+            --border: #2A2E35;
+            --success: #27AE60;
+            --warning: #F39C12;
+            --danger: #E74C3C;
+        }
 
-export type User = typeof users.$inferSelect;
-export type InsertUser = typeof users.$inferInsert;
+        html[dir="rtl"] {
+            direction: rtl;
+        }
 
-// Movies table
-export const movies = mysqlTable("movies", {
-  id: int("id").autoincrement().primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: longtext("description"),
-  genre: varchar("genre", { length: 255 }).notNull(),
-  releaseYear: int("releaseYear"),
-  director: varchar("director", { length: 255 }),
-  cast: text("cast"),
-  duration: int("duration"),
-  rating: decimal("rating", { precision: 3, scale: 1 }).default("0"),
-  posterUrl: text("posterUrl"),
-  backdropUrl: text("backdropUrl"),
-  trailerUrl: text("trailerUrl"),
-  contentRating: varchar("contentRating", { length: 20 }),
-  minSubscriptionTier: mysqlEnum("minSubscriptionTier", ["Free", "Premium", "Pro Max Plus"]).default("Free").notNull(),
-  videoUrl: text("videoUrl"),
-  availableQualities: varchar("availableQualities", { length: 100 }).default("HD,Full HD,4K"),
-  subtitles: json("subtitles"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #0F1419 0%, #1a1f2e 100%);
+            color: var(--text);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
 
-export type Movie = typeof movies.$inferSelect;
-export type InsertMovie = typeof movies.$inferInsert;
+        /* Header */
+        header {
+            background: rgba(15, 20, 25, 0.95);
+            backdrop-filter: blur(10px);
+            padding: 1rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            border-bottom: 1px solid var(--border);
+        }
 
-// Series table
-export const series = mysqlTable("series", {
-  id: int("id").autoincrement().primaryKey(),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: longtext("description"),
-  genre: varchar("genre", { length: 255 }).notNull(),
-  releaseYear: int("releaseYear"),
-  director: varchar("director", { length: 255 }),
-  cast: text("cast"),
-  rating: decimal("rating", { precision: 3, scale: 1 }).default("0"),
-  posterUrl: text("posterUrl"),
-  backdropUrl: text("backdropUrl"),
-  trailerUrl: text("trailerUrl"),
-  contentRating: varchar("contentRating", { length: 20 }),
-  minSubscriptionTier: mysqlEnum("minSubscriptionTier", ["Free", "Premium", "Pro Max Plus"]).default("Free").notNull(),
-  totalSeasons: int("totalSeasons"),
-  totalEpisodes: int("totalEpisodes"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+        .header-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 2rem;
+        }
 
-export type Series = typeof series.$inferSelect;
-export type InsertSeries = typeof series.$inferInsert;
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Playfair Display', serif;
+            white-space: nowrap;
+        }
 
-// Episodes table
-export const episodes = mysqlTable("episodes", {
-  id: int("id").autoincrement().primaryKey(),
-  seriesId: int("seriesId").notNull(),
-  seasonNumber: int("seasonNumber").notNull(),
-  episodeNumber: int("episodeNumber").notNull(),
-  title: varchar("title", { length: 255 }).notNull(),
-  description: longtext("description"),
-  duration: int("duration"),
-  releaseDate: timestamp("releaseDate"),
-  videoUrl: text("videoUrl"),
-  posterUrl: text("posterUrl"),
-  availableQualities: varchar("availableQualities", { length: 100 }).default("HD,Full HD,4K"),
-  subtitles: json("subtitles"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+        .logo span {
+            color: var(--accent);
+        }
 
-export type Episode = typeof episodes.$inferSelect;
-export type InsertEpisode = typeof episodes.$inferInsert;
+        nav {
+            display: flex;
+            gap: 2rem;
+            align-items: center;
+            flex: 1;
+        }
 
-// Favorites table
-export const favorites = mysqlTable("favorites", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  movieId: int("movieId"),
-  seriesId: int("seriesId"),
-  type: mysqlEnum("type", ["movie", "series"]).notNull(),
-  addedAt: timestamp("addedAt").defaultNow().notNull(),
-});
+        nav a {
+            color: var(--text);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+            position: relative;
+        }
 
-export type Favorite = typeof favorites.$inferSelect;
-export type InsertFavorite = typeof favorites.$inferInsert;
+        nav a:hover {
+            color: var(--primary);
+        }
 
-// Watch History table
-export const watchHistory = mysqlTable("watchHistory", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  movieId: int("movieId"),
-  episodeId: int("episodeId"),
-  type: mysqlEnum("type", ["movie", "episode"]).notNull(),
-  watchedAt: timestamp("watchedAt").defaultNow().notNull(),
-  duration: int("duration"),
-  totalDuration: int("totalDuration"),
-  quality: varchar("quality", { length: 50 }),
-});
+        nav a::after {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--primary);
+            transition: width 0.3s ease;
+        }
 
-export type WatchHistory = typeof watchHistory.$inferSelect;
-export type InsertWatchHistory = typeof watchHistory.$inferInsert;
+        nav a:hover::after {
+            width: 100%;
+        }
 
-// Reviews table
-export const reviews = mysqlTable("reviews", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  movieId: int("movieId"),
-  seriesId: int("seriesId"),
-  type: mysqlEnum("type", ["movie", "series"]).notNull(),
-  rating: int("rating").notNull(),
-  title: varchar("title", { length: 255 }),
-  content: longtext("content"),
-  helpful: int("helpful").default(0),
-  unhelpful: int("unhelpful").default(0),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+        .header-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
 
-export type Review = typeof reviews.$inferSelect;
-export type InsertReview = typeof reviews.$inferInsert;
+        .language-selector, .currency-selector {
+            background: rgba(42, 46, 53, 0.5);
+            border: 1px solid var(--border);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            color: var(--text);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
 
-// Comments table
-export const comments = mysqlTable("comments", {
-  id: int("id").autoincrement().primaryKey(),
-  reviewId: int("reviewId").notNull(),
-  userId: int("userId").notNull(),
-  content: longtext("content").notNull(),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+        .language-selector:hover, .currency-selector:hover {
+            border-color: var(--primary);
+        }
 
-export type Comment = typeof comments.$inferSelect;
-export type InsertComment = typeof comments.$inferInsert;
+        .btn {
+            padding: 0.7rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 0.95rem;
+        }
 
-// Subscriptions table
-export const subscriptions = mysqlTable("subscriptions", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  tier: mysqlEnum("tier", ["Free", "Premium", "Pro Max Plus"]).notNull(),
-  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
-  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
-  status: mysqlEnum("status", ["active", "canceled", "past_due", "paused"]).default("active").notNull(),
-  currentPeriodStart: timestamp("currentPeriodStart"),
-  currentPeriodEnd: timestamp("currentPeriodEnd"),
-  canceledAt: timestamp("canceledAt"),
-  autoRenew: boolean("autoRenew").default(true),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary), #FF8C42);
+            color: white;
+            box-shadow: 0 4px 15px rgba(255, 107, 53, 0.3);
+        }
 
-export type Subscription = typeof subscriptions.$inferSelect;
-export type InsertSubscription = typeof subscriptions.$inferInsert;
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(255, 107, 53, 0.5);
+        }
 
-// Notifications table
-export const notifications = mysqlTable("notifications", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  type: mysqlEnum("type", ["new_content", "new_episode", "recommendation", "subscription"]).notNull(),
-  title: varchar("title", { length: 255 }).notNull(),
-  message: longtext("message"),
-  movieId: int("movieId"),
-  seriesId: int("seriesId"),
-  read: boolean("read").default(false),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+        .btn-secondary {
+            background: transparent;
+            color: var(--text);
+            border: 2px solid var(--primary);
+        }
 
-export type Notification = typeof notifications.$inferSelect;
-export type InsertNotification = typeof notifications.$inferInsert;
+        .btn-secondary:hover {
+            background: rgba(255, 107, 53, 0.1);
+        }
 
-// User Preferences table
-export const userPreferences = mysqlTable("userPreferences", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull().unique(),
-  favoriteGenres: varchar("favoriteGenres", { length: 255 }),
-  notificationsEnabled: boolean("notificationsEnabled").default(true),
-  emailNotifications: boolean("emailNotifications").default(true),
-  defaultQuality: varchar("defaultQuality", { length: 50 }).default("Full HD"),
-  autoPlayNext: boolean("autoPlayNext").default(true),
-  language: varchar("language", { length: 10 }).default("en"),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+        /* Hero */
+        .hero {
+            height: 100vh;
+            background: linear-gradient(135deg, rgba(15, 20, 25, 0.8), rgba(26, 188, 156, 0.1)), url('https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=1200') center/cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;
+        }
 
-export type UserPreference = typeof userPreferences.$inferSelect;
-export type InsertUserPreference = typeof userPreferences.$inferInsert;
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 30% 50%, rgba(255, 107, 53, 0.1), transparent);
+            pointer-events: none;
+        }
 
-// Recommendations table
-export const recommendations = mysqlTable("recommendations", {
-  id: int("id").autoincrement().primaryKey(),
-  userId: int("userId").notNull(),
-  movieId: int("movieId"),
-  seriesId: int("seriesId"),
-  type: mysqlEnum("type", ["movie", "series"]).notNull(),
-  score: decimal("score", { precision: 5, scale: 2 }),
-  reason: varchar("reason", { length: 255 }),
-  createdAt: timestamp("createdAt").defaultNow().notNull(),
-});
+        .hero-content {
+            max-width: 800px;
+            text-align: center;
+            z-index: 2;
+            animation: fadeInUp 1s ease;
+        }
 
-export type Recommendation = typeof recommendations.$inferSelect;
-export type InsertRecommendation = typeof recommendations.$inferInsert;
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .hero h1 {
+            font-size: 4rem;
+            font-weight: 800;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, var(--primary), var(--accent));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .hero p {
+            font-size: 1.3rem;
+            color: var(--text);
+            margin-bottom: 2rem;
+            font-weight: 300;
+        }
+
+        .hero-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Section */
+        .section {
+            max-width: 1400px;
+            margin: 4rem auto;
+            padding: 0 2rem;
+        }
+
+        .section-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            color: var(--light);
+            font-family: 'Playfair Display', serif;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: rgba(42, 46, 53, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .card:hover {
+            transform: translateY(-8px);
+            border-color: var(--primary);
+            box-shadow: 0 10px 30px rgba(255, 107, 53, 0.2);
+        }
+
+        .card img {
+            width: 100%;
+            height: 280px;
+            object-fit: cover;
+            display: block;
+        }
+
+        .card-info {
+            padding: 1rem;
+        }
+
+        .card-title {
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+        }
+
+        .card-meta {
+            font-size: 0.85rem;
+            color: var(--text);
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: rgba(15, 20, 25, 0.95);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            max-height: 90vh;
+            overflow-y: auto;
+            position: relative;
+        }
+
+        .modal-close {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: none;
+            border: none;
+            color: var(--text);
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .modal-close:hover {
+            color: var(--primary);
+        }
+
+        /* Form */
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: var(--light);
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 0.8rem;
+            background: rgba(15, 20, 25, 0.8);
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            color: var(--text);
+            font-family: 'Poppins', sans-serif;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        /* Pricing */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .pricing-card {
+            background: rgba(42, 46, 53, 0.7);
+            border: 2px solid var(--border);
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            transition: all 0.3s ease;
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            transform: scale(1.05);
+            background: linear-gradient(135deg, rgba(255, 107, 53, 0.15), rgba(26, 188, 156, 0.1));
+        }
+
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--light);
+        }
+
+        .price {
+            font-size: 2.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .features-list {
+            text-align: left;
+            margin: 1.5rem 0;
+            color: var(--text);
+        }
+
+        .features-list li {
+            list-style: none;
+            padding: 0.5rem 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .features-list li::before {
+            content: '✓ ';
+            color: var(--accent);
+            font-weight: bold;
+            margin-right: 0.5rem;
+        }
+
+        /* Admin Panel */
+        .admin-panel {
+            background: rgba(42, 46, 53, 0.5);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 2rem;
+            margin: 2rem 0;
+        }
+
+        .admin-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1.5rem;
+        }
+
+        .admin-card {
+            background: rgba(15, 20, 25, 0.7);
+            border: 1px solid var(--border);
+            padding: 1.5rem;
+            border-radius: 8px;
+        }
+
+        .admin-card h4 {
+            color: var(--light);
+            margin-bottom: 1rem;
+        }
+
+        /* Footer */
+        footer {
+            background: rgba(15, 20, 25, 0.95);
+            border-top: 1px solid var(--border);
+            padding: 3rem 2rem;
+            margin-top: 4rem;
+        }
+
+        .footer-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .footer-section h4 {
+            color: var(--light);
+            margin-bottom: 1rem;
+            font-size: 1.1rem;
+        }
+
+        .footer-section ul {
+            list-style: none;
+        }
+
+        .footer-section ul li {
+            margin-bottom: 0.5rem;
+        }
+
+        .footer-section a {
+            color: var(--text);
+            text-decoration: none;
+            transition: color 0.3s ease;
+        }
+
+        .footer-section a:hover {
+            color: var(--primary);
+        }
+
+        .social-links {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .social-icon {
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: rgba(255, 107, 53, 0.2);
+            border: 2px solid var(--primary);
+            border-radius: 50%;
+            color: var(--primary);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            font-size: 1.2rem;
+        }
+
+        .social-icon:hover {
+            background: var(--primary);
+            color: white;
+            transform: translateY(-3px);
+        }
+
+        .footer-bottom {
+            border-top: 1px solid var(--border);
+            padding-top: 2rem;
+            text-align: center;
+            color: var(--text);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+
+            .header-container {
+                flex-wrap: wrap;
+                gap: 1rem;
+            }
+
+            nav {
+                order: 3;
+                width: 100%;
+                gap: 1rem;
+            }
+
+            .grid {
+                grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+                gap: 1rem;
+            }
+
+            .pricing-card.featured {
+                transform: scale(1);
+            }
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid var(--border);
+            border-radius: 50%;
+            border-top-color: var(--primary);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Alert */
+        .alert {
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 1rem;
+        }
+
+        .alert-success {
+            background: rgba(39, 174, 96, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-danger {
+            background: rgba(231, 76, 60, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
+        }
+
+        .alert-warning {
+            background: rgba(243, 156, 18, 0.2);
+            border: 1px solid var(--warning);
+            color: var(--warning);
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            border-bottom: 2px solid var(--border);
+            margin-bottom: 2rem;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            padding: 1rem;
+            cursor: pointer;
+            font-weight: 600;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .tab-btn.active {
+            color: var(--primary);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: var(--primary);
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="header-container">
+            <div class="logo">HAMO & <span>TRIPLE M</span></div>
+            <nav>
+                <a href="#home">Home</a>
+                <a href="#movies">Movies</a>
+                <a href="#series">Series</a>
+                <a href="#live">Live TV</a>
+                <a href="#music">Music</a>
+                <a href="#games">Games</a>
+                <a href="#pricing">Pricing</a>
+            </nav>
+            <div class="header-controls">
+                <select class="language-selector" id="languageSelector">
+                    <option value="en">English</option>
+                    <option value="ar">العربية</option>
+                    <option value="es">Español</option>
+                    <option value="fr">Français</option>
+                    <option value="de">Deutsch</option>
+                    <option value="zh">中文</option>
+                    <option value="ja">日本語</option>
+                    <option value="pt">Português</option>
+                    <option value="ru">Русский</option>
+                    <option value="ko">한국어</option>
+                </select>
+                <select class="currency-selector" id="currencySelector">
+                    <option value="USD">USD ($)</option>
+                    <option value="EUR">EUR (€)</option>
+                    <option value="GBP">GBP (£)</option>
+                    <option value="JPY">JPY (¥)</option>
+                    <option value="AED">AED (د.إ)</option>
+                    <option value="SAR">SAR (﷼)</option>
+                    <option value="EGP">EGP (£)</option>
+                    <option value="CNY">CNY (¥)</option>
+                    <option value="INR">INR (₹)</option>
+                    <option value="BRL">BRL (R$)</option>
+                </select>
+                <button class="btn btn-secondary" onclick="openLoginModal()">Login</button>
+                <button class="btn btn-primary" onclick="openSignupModal()">Sign Up</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-content">
+            <h1>Welcome to HAMO & TRIPLE M</h1>
+            <p>Your Global Entertainment Platform - Movies, Series, Live TV, Music, Games & More</p>
+            <div class="hero-buttons">
+                <button class="btn btn-primary" onclick="openSignupModal()">Start Free Trial</button>
+                <button class="btn btn-secondary" onclick="document.getElementById('movies').scrollIntoView({behavior: 'smooth'})">Explore Now</button>
+            </div>
+        </div>
+    </section>
+
+    <!-- Movies Section -->
+    <div class="section" id="movies">
+        <h2 class="section-title">Featured Movies</h2>
+        <div class="grid" id="moviesGrid">
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1574375927938-d5a98e8ffe85?w=300" alt="Movie">
+                <div class="card-info">
+                    <div class="card-title">Action Movie</div>
+                    <div class="card-meta">
+                        <span>⭐ 8.5</span>
+                        <span>2024</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="https://images.unsplash.com/photo-1598899134739-24c46f58b8c0?w=300" alt="Movie">
+                <div class="card-info">
+                    <div class="card-title">Drama Movie</div>
+                    <div class="card-meta">
+                        <span>⭐ 9.0</span>
+                        <span>2024</span>
+                    </div>
+                </div>
+            </div>
+            <div class="card">
+                <img src="https://images.unsplash.com/pho
