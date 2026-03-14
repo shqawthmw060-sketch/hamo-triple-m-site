@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>HAMO & TRIPLE M - Modern Pro Max Plus</title>
+    <title>HAMO & TRIPLE M - Pro Max Plus</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://js.stripe.com/v3/"></script>
     <style>
         * {
             margin: 0;
@@ -43,7 +44,6 @@
             min-height: 100vh;
         }
 
-        /* Scrollbar */
         ::-webkit-scrollbar {
             width: 10px;
         }
@@ -70,18 +70,6 @@
             position: sticky;
             top: 0;
             z-index: 1000;
-            animation: slideDown 0.5s ease;
-        }
-
-        @keyframes slideDown {
-            from {
-                opacity: 0;
-                transform: translateY(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .header-container {
@@ -102,13 +90,6 @@
             background-clip: text;
             font-family: 'Space Grotesk', sans-serif;
             letter-spacing: -1px;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .logo i {
-            -webkit-text-fill-color: var(--primary);
         }
 
         nav {
@@ -231,18 +212,6 @@
             max-width: 900px;
             text-align: center;
             z-index: 2;
-            animation: fadeInUp 1s ease 0.2s both;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .hero h1 {
@@ -271,7 +240,6 @@
             gap: 1.5rem;
             justify-content: center;
             flex-wrap: wrap;
-            animation: fadeInUp 1s ease 0.4s both;
         }
 
         .btn-hero {
@@ -288,7 +256,6 @@
 
         .section-header {
             margin-bottom: 3rem;
-            animation: fadeInUp 0.8s ease;
         }
 
         .section-title {
@@ -312,7 +279,6 @@
             gap: 1rem;
             margin-bottom: 2.5rem;
             flex-wrap: wrap;
-            animation: fadeInUp 0.8s ease 0.1s both;
         }
 
         .filter-btn {
@@ -338,7 +304,6 @@
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
             gap: 2rem;
-            animation: fadeInUp 0.8s ease 0.2s both;
         }
 
         .card {
@@ -350,7 +315,6 @@
             cursor: pointer;
             transition: all 0.3s ease;
             position: relative;
-            group: card;
         }
 
         .card:hover {
@@ -370,22 +334,6 @@
             font-size: 4rem;
             position: relative;
             overflow: hidden;
-        }
-
-        .card-image::after {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, transparent, rgba(99, 102, 241, 0.1));
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-
-        .card:hover .card-image::after {
-            opacity: 1;
         }
 
         .card-content {
@@ -429,12 +377,6 @@
             z-index: 2000;
             align-items: center;
             justify-content: center;
-            animation: fadeIn 0.3s ease;
-        }
-
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
         }
 
         .modal.active {
@@ -451,18 +393,6 @@
             max-height: 90vh;
             overflow-y: auto;
             position: relative;
-            animation: slideUp 0.3s ease;
-        }
-
-        @keyframes slideUp {
-            from {
-                opacity: 0;
-                transform: translateY(40px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
         }
 
         .modal-close {
@@ -576,7 +506,6 @@
 
         .tab-content.active {
             display: block;
-            animation: fadeIn 0.3s ease;
         }
 
         /* Stats */
@@ -595,7 +524,6 @@
             border-radius: 16px;
             text-align: center;
             transition: all 0.3s ease;
-            animation: fadeInUp 0.8s ease;
         }
 
         .stat-card:hover {
@@ -607,10 +535,6 @@
         .stat-icon {
             font-size: 2.5rem;
             margin-bottom: 1rem;
-            background: linear-gradient(135deg, var(--primary), var(--secondary));
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
         }
 
         .stat-number {
@@ -625,6 +549,76 @@
             color: var(--text-light);
             font-size: 0.95rem;
             font-weight: 500;
+        }
+
+        /* Pricing */
+        .pricing-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin: 3rem 0;
+        }
+
+        .pricing-card {
+            background: rgba(30, 41, 59, 0.6);
+            backdrop-filter: blur(10px);
+            border: 2px solid rgba(51, 65, 85, 0.3);
+            padding: 2.5rem;
+            border-radius: 16px;
+            text-align: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .pricing-card:hover {
+            border-color: var(--primary);
+            transform: translateY(-8px);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.2);
+        }
+
+        .pricing-card.featured {
+            border-color: var(--primary);
+            background: rgba(30, 41, 59, 0.8);
+            transform: scale(1.05);
+        }
+
+        .pricing-card h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+            color: var(--light);
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        .price {
+            font-size: 3rem;
+            font-weight: 800;
+            color: var(--primary);
+            margin-bottom: 1rem;
+        }
+
+        .price-period {
+            color: var(--text-light);
+            font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .features-list {
+            text-align: left;
+            margin: 2rem 0;
+            color: var(--text);
+        }
+
+        .features-list li {
+            list-style: none;
+            padding: 0.7rem 0;
+            border-bottom: 1px solid rgba(51, 65, 85, 0.3);
+        }
+
+        .features-list li::before {
+            content: '✓ ';
+            color: var(--success);
+            font-weight: bold;
+            margin-right: 0.5rem;
         }
 
         /* Footer */
@@ -710,19 +704,28 @@
             margin-bottom: 0.5rem;
         }
 
-        /* Loading */
-        .loading {
-            display: inline-block;
-            width: 20px;
-            height: 20px;
-            border: 3px solid rgba(99, 102, 241, 0.3);
-            border-radius: 50%;
-            border-top-color: var(--primary);
-            animation: spin 1s ease-in-out infinite;
+        /* Alert */
+        .alert {
+            padding: 1rem;
+            border-radius: 10px;
+            margin-bottom: 1rem;
+            display: none;
         }
 
-        @keyframes spin {
-            to { transform: rotate(360deg); }
+        .alert.active {
+            display: block;
+        }
+
+        .alert-success {
+            background: rgba(16, 185, 129, 0.2);
+            border: 1px solid var(--success);
+            color: var(--success);
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.2);
+            border: 1px solid var(--danger);
+            color: var(--danger);
         }
 
         /* Responsive */
@@ -741,4 +744,9 @@
             }
 
             nav {
-      
+                display: none;
+            }
+
+            .header-controls {
+                flex-wrap: wrap;
+    
